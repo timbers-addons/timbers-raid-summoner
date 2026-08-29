@@ -1,5 +1,10 @@
 # Changelog
 
+## v2026.08.29 (2026-08-29)
+
+- Updated Era TOC version to 11509
+
+
 ## v2026.07.07 (2026-07-08)
 
 - Fixed pkgmeta paths after the Src rename so packaging doesn't double-nest the addon, removed the stale nested pkgmeta
@@ -11,10 +16,7 @@
 - Added metadata doc file
 - Moved files to align with desired file structure
 
-
-All notable changes to this project will be documented in this file.
-
-## [v2026.03.31] - 2026-03-31
+## v2026.03.31
 
 ### Added
 
