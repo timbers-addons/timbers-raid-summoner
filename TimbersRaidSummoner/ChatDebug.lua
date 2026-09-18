@@ -304,7 +304,7 @@ events:SetScript("OnEvent", function(_, event, ...)
         local unit, _, spellID = ...
         if unit == "player" then
             Debug:Log("ACTUAL " .. event .. " id=" .. tostring(spellID)
-                .. " name=" .. tostring(spellID and GetSpellInfo(spellID)))
+                .. " name=" .. tostring(spellID and TRS.GetSpellInfo(spellID)))
         end
     end
 end)

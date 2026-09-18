@@ -1,6 +1,6 @@
 # Timber's Raid Summoner
 
-A World of Warcraft Classic TBC Anniversary (20505) addon that provides a comprehensive and feature-packed interface used for summoning entire raids or parties. Born from a need to organize summon requests and raid members running to the instance portal on my summoning alt, I created an addon so powerful that it's the only addon you need as a level 20 warlock when it comes to summoning.
+A World of Warcraft addon for Classic Era, TBC Anniversary, and WoW: Forever that provides a comprehensive and feature-packed interface used for summoning entire raids or parties. Born from a need to organize summon requests and raid members running to the instance portal on my summoning alt, I created an addon so powerful that it's the only addon you need as a level 20 warlock when it comes to summoning.
 
 ## Features
 
@@ -65,7 +65,7 @@ mode every time the panel is opened and are disabled after a reload.
 `All (settings)` uses the addon's saved message options. The group, say, and
 whisper buttons test only that channel, even if its saved option is off.
 Tests do not modify saved settings. Click `Refresh settings` after editing
-message options or templates. Run the same tests on both supported clients.
+message options or templates. Run the same tests on every supported client.
 
 Queue say is tested through a secure click macro. Queue group/whisper
 and all meeting-stone messages use the shared message functions after the

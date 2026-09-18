@@ -98,12 +98,25 @@ local function click(button, mouseButton)
 end
 local function log() return table.concat(TimbersRaidSummoner.ChatDebug.lines, "\n") end
 
+dofile("TimbersRaidSummoner/Compat.lua")
 dofile("TimbersRaidSummoner/TimbersRaidSummoner.lua")
 local TRS = TimbersRaidSummoner
 local addonEvents = frames[#frames]
 dofile("TimbersRaidSummoner/ChatMessages.lua")
 dofile("TimbersRaidSummoner/ChatDebug.lua")
 local debugEvents = frames[#frames]
+
+-- Newer engines only have C_Spell.GetSpellInfo, which returns a table.
+do
+    local legacy = GetSpellInfo
+    GetSpellInfo = nil
+    C_Spell = { GetSpellInfo = function(id) return { name = "Ritual " .. id, iconID = 7, spellID = id } end }
+    local name, _, icon, _, _, _, id = TRS.GetSpellInfo(698)
+    equal(name, "Ritual 698", "C_Spell name is returned positionally")
+    equal(icon, 7, "C_Spell icon lands in the legacy icon slot")
+    equal(id, 698, "C_Spell spell ID lands in the legacy slot")
+    GetSpellInfo, C_Spell = legacy, nil
+end
 -- Initialize saved variables without constructing the unrelated main window.
 TRS.CreateMainFrame = function() end
 TRS.InitializeMinimapButton = function() end
@@ -299,7 +312,9 @@ addonEvents.scripts.OnEvent(addonEvents, "UNIT_SPELLCAST_INTERRUPTED", "player",
 spellName = "Localized ritual"
 addonEvents.scripts.OnEvent(addonEvents, "UNIT_SPELLCAST_START", "player", "cast", 698)
 flush()
-equal(#sent, 0, "Diagnostics do not silently change current locale-dependent behavior")
+contains(log(), "SKIP group/whisper: summon not from queue",
+    "Summon is matched by spell ID, so a localized name still starts the manual summon flow")
+equal(#sent, 0, "Manual casts still send no group or whisper messages")
 contains(log(), "name=Localized ritual", "Localized spell names are visible for diagnosis")
 
 -- Real meeting-stone events also use the shared sender, including on a non-warlock.

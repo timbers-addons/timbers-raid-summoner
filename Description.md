@@ -1,6 +1,6 @@
 # Timber's Raid Summoner
 
-A comprehensive raid summon management addon for WoW Classic Era and Anniversary Edition that provides an interface for easily selecting and coordinating summons of raid members. Summon via a list of raid members, or with the summoning queue. Many more features not seen elsewhere.
+A comprehensive raid summon management addon for WoW Classic Era, Anniversary Edition, and WoW: Forever that provides an interface for easily selecting and coordinating summons of raid members. Summon via a list of raid members, or with the summoning queue. Many more features not seen elsewhere.
 
 To open, type "/trs" or "/timbersraidsummoner". You can also add a keybind for the addon in the "Options > Keybindings > AddOns" menu.
 
@@ -138,6 +138,6 @@ Characters in the summon queue have a timeout of 5 minutes. Once a character has
 
 ## Technical Details
 
-- **Supported Game Versions**: WoW Classic Era (1.15.x), TBC Classic (2.5.x)
+- **Supported Game Versions**: WoW Classic Era (1.15.x), TBC Classic (2.5.x), WoW: Forever (1.60.x)
 - **SavedVariables**: Settings persist per-account
 - **Addon Communication**: Uses addon message channel for cross-player sync

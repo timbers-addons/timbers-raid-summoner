@@ -2,46 +2,13 @@
 -- Main addon file
 
 local addonName = "TimbersRaidSummoner"
-local TRS = {}
-_G[addonName] = TRS
+local TRS = _G[addonName]
 
 -- TRS.NAME    = ADDON_NAME
 TRS.NAME    = C_AddOns.GetAddOnMetadata("TimbersRaidSummoner", "Title")
 TRS.VERSION = C_AddOns.GetAddOnMetadata("TimbersRaidSummoner", "Version")
 
--- Compatibility wrapper for SendAddonMessage
--- Classic Era has C_ChatInfo.SendAddonMessage but it requires registration
--- We need to register the prefix first for it to work
-local SendAddonMessageCompat
-local ADDON_PREFIX = "TRS" -- Use short prefix (max 16 chars recommended)
-
--- Test what's actually available
-local hasGlobalSend = (type(SendAddonMessage) == "function")
-local hasCChatInfo = (C_ChatInfo ~= nil)
-local hasCChatSend = (C_ChatInfo and type(C_ChatInfo.SendAddonMessage) == "function")
-local hasRegister = (C_ChatInfo and type(C_ChatInfo.RegisterAddonMessagePrefix) == "function")
-
--- Try to register the prefix if the function exists
-if hasRegister then
-    C_ChatInfo.RegisterAddonMessagePrefix(ADDON_PREFIX)
-end
-
-if hasGlobalSend then
-    -- Classic/TBC API
-    SendAddonMessageCompat = function(prefix, message, channel)
-        return SendAddonMessage(prefix, message, channel)
-    end
-elseif hasCChatSend then
-    -- Retail/modern API (or Classic Era with C_ChatInfo)
-    SendAddonMessageCompat = function(prefix, message, channel)
-        return C_ChatInfo.SendAddonMessage(ADDON_PREFIX, message, channel)
-    end
-else
-    -- Fallback: no addon communication available
-    SendAddonMessageCompat = function(prefix, message, channel)
-        return false
-    end
-end
+local RITUAL_OF_SUMMONING_ID = 698
 
 -- Saved variables initialization
 TimbersRaidSummonerDB = TimbersRaidSummonerDB or {
@@ -122,12 +89,12 @@ function TRS:CanSummon()
         return false
     end
        -- Check if player has Ritual of Summoning spell
-    local spellName = GetSpellInfo(698) -- Ritual of Summoning spell ID
+    local spellName = TRS.GetSpellInfo(RITUAL_OF_SUMMONING_ID) -- Ritual of Summoning spell ID
     if not spellName then
         return false
     end
        -- Check if the player knows the spell
-    if IsSpellKnown(698) then
+    if IsSpellKnown(RITUAL_OF_SUMMONING_ID) then
         return true
     end
        return false
@@ -1183,8 +1150,8 @@ function TRS:CreateSettingsColumn(parent)
     }
 
     local function GetExpansionDefaultColor()
-        if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then
-            return "F58CBA" -- pink
+        if TRS.Client.shamanDefaultColor == "pink" then
+            return "F58CBA"
         else
             return "0070DE" -- blue
         end
@@ -1722,7 +1689,7 @@ function TRS:UpdateRaidList()
                     button:SetAttribute("type1", "target")  -- Left click = target
                     button:SetAttribute("type2", "macro")   -- Right click = macro (for summoning)
                                        -- Get localized spell name for Ritual of Summoning
-                    local summonSpellName = GetSpellInfo(698) or "Ritual of Summoning"
+                    local summonSpellName = TRS.GetSpellInfo(RITUAL_OF_SUMMONING_ID) or "Ritual of Summoning"
                                        -- Build macro text - only include /s if not from queue (queue clicks handled in PostClick)
                     local macroText = "/target " .. member.name .. "\n/cast " .. summonSpellName
                     button:SetAttribute("macrotext2", macroText)
@@ -2026,7 +1993,7 @@ function TRS:UpdateSummonQueue()
             button:SetAttribute("type1", "target")  -- Left click = target
             button:SetAttribute("type2", "macro")   -- Right click = macro (for summoning)
                        -- Get localized spell name for Ritual of Summoning
-            local summonSpellName = GetSpellInfo(698) or "Ritual of Summoning"
+            local summonSpellName = TRS.GetSpellInfo(RITUAL_OF_SUMMONING_ID) or "Ritual of Summoning"
                        -- Build macro text - include /s message if enabled
             local macroText = TRS:BuildQueueSayMacro(entry.name)
             macroText = macroText .. "/target " .. entry.name .. "\n/cast " .. summonSpellName
@@ -2233,7 +2200,7 @@ function TRS:BroadcastSummoningState(playerName, isSummoning)
         local state = isSummoning and "1" or "0"
         local summoner = UnitName("player") or ""
         local msg = "SUMMONING:" .. playerName .. ":" .. state .. ":" .. summoner
-        SendAddonMessageCompat("TRS", msg, channel)
+        TRS.SendAddonMessage("TRS", msg, channel)
     end
 end
 
@@ -2316,7 +2283,7 @@ function TRS:BroadcastQueueRemoval(removedPlayer, removerName, reason)
     if IsInRaid() or IsInGroup() then
         local channel = IsInRaid() and "RAID" or "PARTY"
         local msg = "REMOVED:" .. removedPlayer .. ":" .. removerName .. ":" .. reason
-        SendAddonMessageCompat("TRS", msg, channel)
+        TRS.SendAddonMessage("TRS", msg, channel)
     end
 end
 
@@ -2513,9 +2480,7 @@ function TRS:GetClassColor(class)
             elseif setting == "blue" then
                 return {0.00, 0.44, 0.87}
             else -- "default" - based on expansion
-                -- WOW_PROJECT_CLASSIC (2) = Classic Era (Vanilla) uses pink
-                -- All other versions (TBC+, Retail) use blue
-                if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then
+                if TRS.Client.shamanDefaultColor == "pink" then
                     return {0.96, 0.55, 0.73} -- pink (vanilla)
                 else
                     return {0.00, 0.44, 0.87} -- blue (TBC+)
@@ -2681,16 +2646,16 @@ end
 function TRS:RequestQueueSync()
     if IsInRaid() or IsInGroup() then
         local channel = IsInRaid() and "RAID" or "PARTY"
-        SendAddonMessageCompat("TRS", "SYNC_REQUEST", channel)
+        TRS.SendAddonMessage("TRS", "SYNC_REQUEST", channel)
     end
 end
 
 -- Broadcast addon presence so others can detect us
 function TRS:BroadcastHello()
     if IsInRaid() then
-        SendAddonMessageCompat("TRS", "HELLO", "RAID")
+        TRS.SendAddonMessage("TRS", "HELLO", "RAID")
     elseif IsInGroup() then
-        SendAddonMessageCompat("TRS", "HELLO", "PARTY")
+        TRS.SendAddonMessage("TRS", "HELLO", "PARTY")
     end
 end
 
@@ -2707,12 +2672,12 @@ function TRS:SendQueueData(target)
 
     -- Send queue count first (includes our summoning state)
     local countMsg = "SYNC_COUNT:" .. #db.summonQueue .. ":" .. summoningTarget .. ":" .. summonerName
-    SendAddonMessageCompat("TRS", countMsg, channel)
+    TRS.SendAddonMessage("TRS", countMsg, channel)
 
     -- Send each queue entry
     for i, entry in ipairs(db.summonQueue) do
         local msg = "SYNC_ENTRY:" .. i .. ":" .. entry.name .. ":" .. (entry.timestamp or 0)
-        SendAddonMessageCompat("TRS", msg, channel)
+        TRS.SendAddonMessage("TRS", msg, channel)
     end
 end
 
@@ -2731,7 +2696,7 @@ function TRS:HandleAddonMessage(message, sender)
         -- Sender has the addon; record them and reply so they know we have it too
         TRS.hasAddon[senderName] = true
         local channel = IsInRaid() and "RAID" or "PARTY"
-        SendAddonMessageCompat("TRS", "HELLO_ACK", channel)
+        TRS.SendAddonMessage("TRS", "HELLO_ACK", channel)
         if TRS.mainFrame and TRS.mainFrame:IsShown() then
             TRS:UpdateRaidList()
         end
@@ -3013,10 +2978,10 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "UNIT_SPELLCAST_START" then
         local unitTarget, castGUID, spellID = ...
         if unitTarget == "player" then
-            local spellName = GetSpellInfo(spellID)
+            local spellName = TRS.GetSpellInfo(spellID)
             TRS:DebugChat("ACTUAL CAST_START id=" .. tostring(spellID) .. " name=" .. tostring(spellName)
                 .. " target=" .. tostring(currentlySummoning) .. " fromQueue=" .. tostring(summonFromQueue))
-            if spellName == "Ritual of Summoning" then
+            if spellID == RITUAL_OF_SUMMONING_ID then
                 -- If currentlySummoning not set (manual cast), detect target
                 if not currentlySummoning then
                     local targetName = UnitName("target")
@@ -3053,9 +3018,7 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
         if unitTarget == "player" then
             -- Clear summoning state for failed/interrupted cast
             if currentlySummoning then
-                local spellName = spellID and GetSpellInfo(spellID)
-                -- Check if it's Ritual of Summoning
-                if spellName == "Ritual of Summoning" then
+                if spellID == RITUAL_OF_SUMMONING_ID then
                     TRS:ClearSummoningState(currentlySummoning)
                     currentlySummoning = nil
                     summonFromQueue = false
@@ -3076,8 +3039,7 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
         local unitTarget, castGUID, spellID = ...
         if unitTarget == "player" then
-            local spellName = GetSpellInfo(spellID)
-            if spellName == "Ritual of Summoning" then
+            if spellID == RITUAL_OF_SUMMONING_ID then
                 -- Cast succeeded, about to transition to channel
                 -- Store current shard count to compare later
                 summonStartShardCount = TRS:CountSoulShards()
@@ -3086,8 +3048,7 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "UNIT_SPELLCAST_CHANNEL_START" then
         local unitTarget, castGUID, spellID = ...
         if unitTarget == "player" then
-            local spellName = GetSpellInfo(spellID)
-            if spellName == "Ritual of Summoning" then
+            if spellID == RITUAL_OF_SUMMONING_ID then
                 -- Channel started - keep player in queue showing "Summoning..."
                 -- They'll be removed if shards decrease or timeout expires
                 summonChannelActive = true
@@ -3127,8 +3088,7 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "UNIT_SPELLCAST_CHANNEL_STOP" then
         local unitTarget, castGUID, spellID = ...
         if unitTarget == "player" then
-            local spellName = GetSpellInfo(spellID)
-            if spellName == "Ritual of Summoning" and summonChannelActive then
+            if spellID == RITUAL_OF_SUMMONING_ID and summonChannelActive then
                 summonChannelActive = false
 
                 -- Check if shard count decreased (summon successful)
