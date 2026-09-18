@@ -1,5 +1,15 @@
 # Changelog
 
+## v2026.09.17a (2026-09-17)
+
+- Fixed chat diagnostic buttons ignoring left-clicks; both mouse buttons now run tests
+- Added a log message when combat prevents a diagnostic test
+
+## v2026.09.17 (2026-09-17)
+
+- Added `/trs debug` chat tests for any class or level, with dry-run and live modes
+- Added a copyable diagnostic log for chat attempts, summon events, and errors
+
 ## v2026.08.29 (2026-08-29)
 
 - Updated Era TOC version to 11509

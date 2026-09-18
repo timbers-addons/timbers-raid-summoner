@@ -1571,6 +1571,8 @@ function TRS:UpdateRaidList()
                 button:EnableMouse(true)
                                -- PostClick handler for UI updates (doesn't block secure actions)
                 button:SetScript("PostClick", function(self, btn)
+                    TRS:DebugChat("Roster click: " .. btn .. " target=" .. tostring(self.playerName)
+                        .. "; roster summons do not request chat announcements")
                     if btn == "RightButton" and self.playerName and TRS:CanSummon() and self.storedIsOnline then
                         -- Don't allow clicking if already casting/channeling
                         if UnitCastingInfo("player") or UnitChannelInfo("player") then
@@ -2026,24 +2028,23 @@ function TRS:UpdateSummonQueue()
                        -- Get localized spell name for Ritual of Summoning
             local summonSpellName = GetSpellInfo(698) or "Ritual of Summoning"
                        -- Build macro text - include /s message if enabled
-            local macroText = ""
-            if db.settings.sendSayMessage then
-                local sayMsg = db.settings.sayMessage or "Summoning %s"
-                sayMsg = string.gsub(sayMsg, "%%s", entry.name)
-                macroText = "/s " .. sayMsg .. "\n"
-            end
+            local macroText = TRS:BuildQueueSayMacro(entry.name)
             macroText = macroText .. "/target " .. entry.name .. "\n/cast " .. summonSpellName
                        button:SetAttribute("macrotext2", macroText)
         end
 
         -- Handle clicks with PostClick for UI updates
         button:SetScript("PostClick", function(self, btn)
+            TRS:DebugChat("Queue click: " .. btn .. " target=" .. tostring(self.playerName))
             if btn == "MiddleButton" then
                 TRS:RemoveFromSummonQueue(self.playerName)
             elseif btn == "RightButton" then
                 local playerName = self.playerName
+                TRS:DebugChat("Queue macro attempted: " .. (self:GetAttribute("macrotext2") or "")
+                    :gsub("\n", " | ") .. "; delivery not confirmed")
                                -- Check if player can summon
                 if not TRS:CanSummon() then
+                    TRS:DebugChat("SKIP queue state: Ritual of Summoning not known on a warlock")
                     return
                 end
                                -- Find the unit to check online status
@@ -2069,20 +2070,24 @@ function TRS:UpdateSummonQueue()
                         end
                     end
                 end
-                               if not targetUnit then
+                if not targetUnit then
+                    TRS:DebugChat("SKIP queue state: target not in group")
                     print("|cFF00FF00Timber's Raid Summoner:|r |cFFFF0000[ERROR]|r " .. playerName .. " is not in your group")
                     return
                 end
-                               if not UnitIsConnected(targetUnit) then
+                if not UnitIsConnected(targetUnit) then
+                    TRS:DebugChat("SKIP queue state: target offline")
                     return
                 end
                                local currentMana = UnitPower("player", 0)
                 if currentMana < 300 then
+                    TRS:DebugChat("SKIP queue state: mana=" .. tostring(currentMana) .. " after click")
                     print("|cFF00FF00Timber's Raid Summoner:|r |cFFFF0000[ERROR]|r Not enough mana to summon (need 300 mana)")
                     return
                 end
 
                 if not UnitExists("target") then
+                    TRS:DebugChat("SKIP queue state: no current target")
                     print("|cFF00FF00Timber's Raid Summoner:|r |cFFFF0000[ERROR]|r You must have a target to summon")
                     return
                 end
@@ -2479,6 +2484,9 @@ SlashCmdList["TIMBERSRAIDSUMMONER"] = function(msg)
     if TRS.TestMode and TRS.TestMode.HandleSlash and TRS.TestMode:HandleSlash(input) then
         return
     end
+    if TRS.ChatDebug and TRS.ChatDebug:HandleSlash(input) then
+        return
+    end
     -- Default behavior: toggle frame
     TRS:ToggleFrame()
 end
@@ -2646,6 +2654,7 @@ function TRS:ParseChatMessage(message, sender)
         end
 
         if matched then
+            TRS:DebugChat("REQUEST " .. playerName .. " matched keyword " .. keyword)
             TRS:AddToSummonQueue(playerName)
             return
         end
@@ -3005,9 +3014,9 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
         local unitTarget, castGUID, spellID = ...
         if unitTarget == "player" then
             local spellName = GetSpellInfo(spellID)
+            TRS:DebugChat("ACTUAL CAST_START id=" .. tostring(spellID) .. " name=" .. tostring(spellName)
+                .. " target=" .. tostring(currentlySummoning) .. " fromQueue=" .. tostring(summonFromQueue))
             if spellName == "Ritual of Summoning" then
-                local db = TimbersRaidSummonerDB
-
                 -- If currentlySummoning not set (manual cast), detect target
                 if not currentlySummoning then
                     local targetName = UnitName("target")
@@ -3026,17 +3035,12 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
                     -- This breaks out of the protected call chain from secure button clicks
                     -- Note: Say message is handled via macro text, not here
                     C_Timer.After(0.1, function()
-                        -- Send raid message if enabled (only if from queue)
-                        if summonFromQueue and db.settings.sendRaidMessage then
-                            local raidMsg = db.settings.raidMessage or "Summoning %s"
-                            raidMsg = string.gsub(raidMsg, "%%s", currentlySummoning)
-                            SendChatMessage(raidMsg, IsInRaid() and "RAID" or "PARTY")
-                        end
-
-                        -- Send whisper if enabled (only if from queue)
-                        if summonFromQueue and db.settings.autoWhisper then
-                            local whisperMsg = db.settings.whisperMessage or "Summoning you now"
-                            SendChatMessage(whisperMsg, "WHISPER", nil, currentlySummoning)
+                        TRS:DebugChat("Queue chat timer: target=" .. tostring(currentlySummoning)
+                            .. " fromQueue=" .. tostring(summonFromQueue))
+                        if summonFromQueue then
+                            TRS:SendSummonMessages(currentlySummoning, "queue")
+                        else
+                            TRS:DebugChat("SKIP group/whisper: summon not from queue")
                         end
                     end)
                 end
@@ -3110,24 +3114,7 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
                                                                        -- Use C_Timer with delay to avoid "Interface action failed" error when sending chat
                                     -- Note: Meeting Stone doesn't use macro, so we send say message here
                                     C_Timer.After(0.1, function()
-                                        -- Send say message if enabled
-                                        if db.settings.sendSayMessage then
-                                            local sayMsg = db.settings.sayMessage or "Summoning %s"
-                                            sayMsg = string.gsub(sayMsg, "%%s", targetName)
-                                            SendChatMessage(sayMsg, "SAY")
-                                        end
-                                                                               -- Send raid message if enabled
-                                        if db.settings.sendRaidMessage then
-                                            local raidMsg = db.settings.raidMessage or "Summoning %s"
-                                            raidMsg = string.gsub(raidMsg, "%%s", targetName)
-                                            SendChatMessage(raidMsg, IsInRaid() and "RAID" or "PARTY")
-                                        end
-
-                                        -- Send whisper if enabled
-                                        if db.settings.autoWhisper then
-                                            local whisperMsg = db.settings.whisperMessage or "Summoning you now"
-                                            SendChatMessage(whisperMsg, "WHISPER", nil, targetName)
-                                        end
+                                        TRS:SendSummonMessages(targetName, "stone")
                                     end)
                                     break
                                 end
