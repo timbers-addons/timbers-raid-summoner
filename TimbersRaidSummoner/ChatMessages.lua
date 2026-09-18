@@ -16,10 +16,10 @@ end
 function TRS:SendSummonChat(message, channel, target)
     self:DebugChat("SEND " .. channel .. (target and " -> " .. target or "") .. ": " .. message)
     if not (self.ChatDebug and self.ChatDebug.enabled) then
-        return SendChatMessage(message, channel, nil, target)
+        return TRS.SendChatMessage(message, channel, nil, target)
     end
 
-    local ok, result = pcall(SendChatMessage, message, channel, nil, target)
+    local ok, result = pcall(TRS.SendChatMessage, message, channel, nil, target)
     if not ok then
         self:DebugChat("ERROR " .. tostring(result))
         error(result, 0)

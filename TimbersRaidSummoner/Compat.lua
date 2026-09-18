@@ -21,6 +21,11 @@ end
 -- Same move for item counts: the global is gone on Forever, C_Item has it.
 TRS.GetItemCount = GetItemCount or (C_Item and C_Item.GetItemCount) or function() return 0 end
 
+-- SendChatMessage is deprecated on the retail engine (11.2.0) in favor of
+-- C_ChatInfo.SendChatMessage, same arguments. Still present on Forever
+-- 1.60.1, so the global is preferred while it lasts.
+TRS.SendChatMessage = SendChatMessage or (C_ChatInfo and C_ChatInfo.SendChatMessage)
+
 -- Addon messages. Pre-Cata clients still expose the global SendAddonMessage;
 -- newer ones only have C_ChatInfo, and both need the prefix registered.
 TRS.ADDON_PREFIX = "TRS"

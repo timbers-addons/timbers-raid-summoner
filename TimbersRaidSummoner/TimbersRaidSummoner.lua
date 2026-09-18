@@ -2416,9 +2416,9 @@ end
 function TRS:SummonPlayer(playerName, unitId, silentMode)
     -- Send messages first
     if not silentMode then
-        SendChatMessage(string.format(db.settings.raidMessage, playerName), "RAID")
+        TRS.SendChatMessage(string.format(db.settings.raidMessage, playerName), "RAID")
         if db.settings.autoWhisper then
-            SendChatMessage(db.settings.whisperMessage, "WHISPER", nil, playerName)
+            TRS.SendChatMessage(db.settings.whisperMessage, "WHISPER", nil, playerName)
         end
     end
 
