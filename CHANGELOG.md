@@ -1,5 +1,9 @@
 # Changelog
 
+## v2026.09.17d (2026-09-17)
+
+- Chat messages now go through the compat layer, ahead of the retail engine dropping the old SendChatMessage global
+
 ## v2026.09.17c (2026-09-17)
 
 - Fixed an error opening the window on WoW: Forever, where the soul shard count used an API that no longer exists
