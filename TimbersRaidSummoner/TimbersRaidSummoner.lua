@@ -2628,9 +2628,9 @@ end
 
 -- Count soul shards in bags
 function TRS:CountSoulShards()
-    -- Use GetItemCount which works in all versions
+    -- Item counts go through the compat wrapper (global vs C_Item)
     -- Soul Shard item ID: 6265
-    local count = GetItemCount(6265, false) -- false = don't include bank
+    local count = TRS.GetItemCount(6265, false) -- false = don't include bank
     return count or 0
 end
 

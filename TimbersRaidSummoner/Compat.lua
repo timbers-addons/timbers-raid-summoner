@@ -18,6 +18,9 @@ function TRS.GetSpellInfo(spell)
     return info.name, nil, info.iconID, info.castTime, info.minRange, info.maxRange, info.spellID, info.originalIconID
 end
 
+-- Same move for item counts: the global is gone on Forever, C_Item has it.
+TRS.GetItemCount = GetItemCount or (C_Item and C_Item.GetItemCount) or function() return 0 end
+
 -- Addon messages. Pre-Cata clients still expose the global SendAddonMessage;
 -- newer ones only have C_ChatInfo, and both need the prefix registered.
 TRS.ADDON_PREFIX = "TRS"
