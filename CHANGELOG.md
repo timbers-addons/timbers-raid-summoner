@@ -1,5 +1,11 @@
 # Changelog
 
+## v2026.09.17b (2026-09-17)
+
+- Added WoW: Forever (interface 16001) to the supported clients
+- Added a client compatibility layer so spell lookups and addon messages work on both the Classic and Forever APIs
+- Summon casts are now matched by spell ID instead of the English spell name, so localized clients detect them too
+
 ## v2026.09.17a (2026-09-17)
 
 - Fixed chat diagnostic buttons ignoring left-clicks; both mouse buttons now run tests
