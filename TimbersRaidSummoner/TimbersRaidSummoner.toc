@@ -2,7 +2,7 @@
 ## Title: Timber's Raid Summoner
 ## Notes: Manages raid summon requests with automated keyword detection
 ## Author: Timbervale
-## Version: v2026.09.17d
+## Version: v2026.09.27
 ## SavedVariables: TimbersRaidSummonerDB
 ## SavedVariablesPerCharacter: TimbersRaidSummonerCharDB
 ## Category: Timber's AddOns
