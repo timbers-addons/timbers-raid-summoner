@@ -46,6 +46,31 @@ else
     end
 end
 
+-- Range checks. On the Midnight engine UnitInRange hands tainted callers a
+-- "secret" boolean: it can be passed along but any test on it errors, so the
+-- answer is unusable to an addon. Probe it, and once it comes back secret stop
+-- asking and report unknown (nil) instead; callers treat unknown as in range.
+local unitInRangeIsSecret = false
+local function toPlainBool(value)
+    return value and true or false
+end
+function TRS.UnitInRange(unit)
+    if not unit or unitInRangeIsSecret or type(UnitInRange) ~= "function" then
+        return nil
+    end
+    local value = UnitInRange(unit)
+    if type(issecretvalue) == "function" and issecretvalue(value) then
+        unitInRangeIsSecret = true
+        return nil
+    end
+    local ok, inRange = pcall(toPlainBool, value)
+    if not ok then
+        unitInRangeIsSecret = true
+        return nil
+    end
+    return inRange
+end
+
 -- Per-client content decisions. Project ID checks live here, not in UI code.
 -- Classic Era shamans keep the vanilla pink class color; later flavors use
 -- blue. Forever's WOW_PROJECT_ID is not confirmed yet, so it lands on blue.

@@ -1,5 +1,9 @@
 # Changelog
 
+## v2026.09.20 (2026-09-20)
+
+- Fixed an error opening the window on WoW: Forever, where the range check returned a value addons are no longer allowed to read; out-of-range dimming is skipped on that client instead
+
 ## v2026.09.17d (2026-09-17)
 
 - Chat messages now go through the compat layer, ahead of the retail engine dropping the old SendChatMessage global

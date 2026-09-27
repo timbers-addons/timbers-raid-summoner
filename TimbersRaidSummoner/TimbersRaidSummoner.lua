@@ -1779,14 +1779,19 @@ function TRS:UpdateRaidList()
                 local r, g, b = TRS:GetClassColor(member.classToken)
                 button.nameText:SetTextColor(r, g, b)
 
-                -- Set opacity based on range (if enabled)
-                if (member.inRange ~= nil and member.inRange) or (member.unitId and UnitInRange(member.unitId)) then
-                    button:SetAlpha(1.0)
-                else
+                -- Set opacity based on range. Unknown range (nil) stays full
+                -- opacity: on the Midnight engine the client will not tell us.
+                local inRange = member.inRange
+                if inRange == nil then
+                    inRange = TRS.UnitInRange(member.unitId)
+                end
+                if inRange == false then
                     local dimAlpha = db.settings.rangeOpacity or 0.8
                     if dimAlpha < 0.1 then dimAlpha = 0.1 end
                     if dimAlpha > 1.0 then dimAlpha = 1.0 end
                     button:SetAlpha(dimAlpha)
+                else
+                    button:SetAlpha(1.0)
                 end
 
                 button:Show()
