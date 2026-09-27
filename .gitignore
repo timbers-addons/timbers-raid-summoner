@@ -4,3 +4,6 @@
 
 # CurseForge / packager build output
 .releases/
+
+# Local-only dev tools (test mode, chat diagnostics): never packaged, never pushed
+/TimbersRaidSummonerDev/

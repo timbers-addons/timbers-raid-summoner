@@ -1,10 +1,12 @@
 package-as: TimbersRaidSummoner
 
 ignore:
-    - TimbersRaidSummoner/Dev
+    - TimbersRaidSummonerDev
+    - .github
     - Images
     - Screenshots
     - Description.md
+    - Metadata.md
     - README.md
 
 move-folders:

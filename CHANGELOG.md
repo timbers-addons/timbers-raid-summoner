@@ -1,5 +1,9 @@
 # Changelog
 
+## v2026.09.27 (2026-09-27)
+
+- Removed the `/trs debug` chat diagnostics; they were a development aid and now live outside the released addon
+
 ## v2026.09.20a (2026-09-20)
 
 - Fixed an error on party and raid chat inside dungeons on WoW: Forever, where the client hides chat text and sender names from addons; those messages are skipped, so summon keywords are not picked up there
