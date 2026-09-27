@@ -1,5 +1,9 @@
 # Changelog
 
+## v2026.09.20a (2026-09-20)
+
+- Fixed an error on party and raid chat inside dungeons on WoW: Forever, where the client hides chat text and sender names from addons; those messages are skipped, so summon keywords are not picked up there
+
 ## v2026.09.20 (2026-09-20)
 
 - Fixed an error opening the window on WoW: Forever, where the range check returned a value addons are no longer allowed to read; out-of-range dimming is skipped on that client instead

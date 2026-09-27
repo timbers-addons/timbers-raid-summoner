@@ -2960,11 +2960,12 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
         end
     elseif event == "CHAT_MSG_ADDON" then
         local prefix, message, channel, sender = ...
-        if prefix == "TRS" then
+        if TRS.IsReadable(prefix, message, sender) and prefix == "TRS" then
             TRS:HandleAddonMessage(message, sender)
         end
     elseif event == "CHAT_MSG_SYSTEM" then
         local systemMessage = ...
+        if not TRS.IsReadable(systemMessage) then return end
         -- Check if this is a summon acceptance message
         -- Common patterns: "PlayerName has accepted your summon."
         -- Or in some locales it might be different
@@ -3141,7 +3142,7 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "CHAT_MSG_RAID" or event == "CHAT_MSG_RAID_LEADER" or
            event == "CHAT_MSG_PARTY" or event == "CHAT_MSG_PARTY_LEADER" then
         local message, sender = ...
-        if sender and sender ~= UnitName("player") then
+        if TRS.IsReadable(message, sender) and sender and sender ~= UnitName("player") then
             TRS:ParseChatMessage(message, sender)
         end
     end

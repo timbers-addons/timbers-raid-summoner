@@ -71,6 +71,26 @@ function TRS.UnitInRange(unit)
     return inRange
 end
 
+-- Chat payloads. Inside instances the Midnight engine hands addons the
+-- message and sender of a chat event as secret strings; comparing one errors.
+-- Unlike range this varies per event (open world chat is still readable), so
+-- nothing is latched: each event is checked and skipped if any value is secret.
+local function compareString(value)
+    return value == ""
+end
+function TRS.IsReadable(...)
+    local hasCheck = type(issecretvalue) == "function"
+    for i = 1, select("#", ...) do
+        local value = select(i, ...)
+        if hasCheck then
+            if issecretvalue(value) then return false end
+        elseif not pcall(compareString, value) then
+            return false
+        end
+    end
+    return true
+end
+
 -- Per-client content decisions. Project ID checks live here, not in UI code.
 -- Classic Era shamans keep the vanilla pink class color; later flavors use
 -- blue. Forever's WOW_PROJECT_ID is not confirmed yet, so it lands on blue.
