@@ -5,5 +5,5 @@
     "class": "Addons",
     "main_category": "Warlock",
     "additional_categories": [ "Raid Frames" ],
-    "repository_url": "https://github.com/mhco/Timbers-Raid-Summoner",
+    "repository_url": "https://github.com/timbers-addons/timbers-raid-summoner",
 }
