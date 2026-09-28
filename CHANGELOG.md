@@ -2,6 +2,16 @@
 
 ## v2026.09.27 (2026-09-27)
 
+- Added a client compat layer so the addon runs on Classic Era, TBC Anniversary and WoW: Forever; summon casts now matched by spell ID
+- Fixed soul shard count erroring on Forever, GetItemCount moved under C_Item
+- Routed chat sends through the compat layer ahead of SendChatMessage going away on the retail engine
+- Fixed the range check erroring on Forever, UnitInRange hands addons a value they can't read
+- Fixed party and raid chat erroring inside dungeons on Forever, the message and sender arrive as secret strings
+- Bumped version to v2026.09.27
+
+
+## v2026.09.27 (2026-09-27)
+
 - Removed the `/trs debug` chat diagnostics; they were a development aid and now live outside the released addon
 
 ## v2026.09.20a (2026-09-20)
